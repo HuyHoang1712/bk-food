@@ -7,33 +7,28 @@ import { useStore } from "@/lib/store"
 import { mockUsers } from "@/lib/mock-data"
 
 export default function HomePage() {
-  // const router = useRouter()
-  // const { currentUser, setCurrentUser } = useStore()
-
-  // useEffect(() => {
-  //   if (currentUser) {
-  //     if (currentUser.role === "customer") {
-  //       router.push("/customer")
-  //     } else if (currentUser.role === "delivery"){
-  //       router.push("/delivery")
-  //     }else  {
-  //       router.push("/restaurant")
-  //     }
-  //   }
-  // }, [currentUser, router])
-
-  // const handleLogin = (role: "customer" | "restaurant" | "delivery") => {
-  //   const user = mockUsers.find((u) => u.role === role)
-  //   if (user) {
-  //     setCurrentUser(user)
-  //   }
-  // }
-
   const router = useRouter()
+  const { currentUser, setCurrentUser } = useStore()
 
-  const handleSelectRole = (role: "customer" | "restaurant" | "delivery") => {
-    router.push(`/auth/login?role=${role}`)
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.role === "customer") {
+        router.push("/customer")
+      } else if (currentUser.role === "delivery"){
+        router.push("/delivery")
+      }else  {
+        router.push("/restaurant")
+      }
+    }
+  }, [currentUser, router])
+
+  const handleLogin = (role: "customer" | "restaurant" | "delivery") => {
+    const user = mockUsers.find((u) => u.role === role)
+    if (user) {
+      setCurrentUser(user)
+    }
   }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-red-50">
@@ -47,14 +42,14 @@ export default function HomePage() {
           <h2 className="text-xl font-semibold text-center mb-6">Đăng nhập với vai trò</h2>
 
           <Button
-            onClick={() => handleSelectRole("customer")}
+            onClick={() => handleLogin("customer")}
             className="w-full h-14 text-lg bg-blue-500 hover:bg-blue-600"
           >
             Khách hàng
           </Button>
 
           <Button
-            onClick={() => handleSelectRole("restaurant")}
+            onClick={() => handleLogin("restaurant")}
             variant="outline"
             className="w-full h-14 text-lg border-blue-500 text-blue-600 hover:bg-blue-50"
           >
@@ -62,7 +57,7 @@ export default function HomePage() {
           </Button>
 
            <Button
-            onClick={() => handleSelectRole("delivery")}
+            onClick={() => handleLogin("delivery")}
             variant="secondary"
             className="w-full h-14 text-lg border-blue-500 bg-slate-500 hover:bg-slate-600"
           >
