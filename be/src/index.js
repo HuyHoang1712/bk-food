@@ -2,19 +2,18 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+
+const userRoutes = require('./routes/userRoute'); 
+const dishRoutes = require('./routes/dishRoute');
+
 const app = express();
-const PORT = 4000; 
+const PORT = process.env.PORT;
 
-// Cấu hình Middleware
-app.use(cors()); // Cho phép Frontend gọi
-app.use(express.json()); // Cho phép đọc dữ liệu JSON gửi lên
+app.use(cors());
+app.use(express.json());
 
-// Tạo một đường dẫn test (Route)
-app.get('/', (req, res) => {
-  res.send('Xin chào! Đây là Backend của BK-FOOD 🍜');
-});
+app.use('/api', dishRoutes); 
 
-// Chạy server
 app.listen(PORT, () => {
-  console.log(`✅ Server đang chạy tại: http://localhost:${PORT}`);
+  // console.log(`✅ Server đang chạy tại: http://localhost:${PORT}`);
 });
