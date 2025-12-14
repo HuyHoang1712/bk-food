@@ -2,21 +2,23 @@
 
 API Spring Boot dùng MySQL để phục vụ đăng nhập email/password hoặc Google OAuth2 cho ứng dụng BK Food.
 
+> **Cơ sở dữ liệu nằm ở đâu?**
+> File khởi tạo MySQL được đặt tại `backend/sql/mysql-init.sql`. Chạy lệnh `mysql -u root -p < backend/sql/mysql-init.sql` để tạo database `bk_food` và user `bk_food_user` nhanh chóng (đừng quên đổi mật khẩu trong file trước khi dùng thật).
+
 ## Chạy nhanh
 
 ```bash
-# Tạo DB + user MySQL (điều chỉnh mật khẩu phù hợp)
-mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS bk_food CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" \
-  -e "CREATE USER IF NOT EXISTS 'bk_food_user'@'%' IDENTIFIED BY 'your_strong_password';" \
-  -e "GRANT ALL PRIVILEGES ON bk_food.* TO 'bk_food_user'@'%'; FLUSH PRIVILEGES;"
+# 1) Tạo DB + user MySQL từ script có sẵn (điều chỉnh mật khẩu trong file trước):
+mysql -u root -p < backend/sql/mysql-init.sql
 
-# Cấu hình biến môi trường
+# 2) Đặt biến môi trường
 export SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/bk_food?useSSL=false&serverTimezone=UTC
 export SPRING_DATASOURCE_USERNAME=bk_food_user
-export SPRING_DATASOURCE_PASSWORD=your_strong_password
+export SPRING_DATASOURCE_PASSWORD=<mat_khau_ban_da_doi>
 export SECURITY_JWT_SECRET=<base64-encoded-256bit-secret>
 export GOOGLE_CLIENT_ID=<google-oauth-client-id>
 
+# 3) Chạy backend
 cd backend
 mvn spring-boot:run
 ```
