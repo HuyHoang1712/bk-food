@@ -122,4 +122,6 @@ export default function AddMenuItemPage() {
       </main>
     </div>
   )
+
+
 }
