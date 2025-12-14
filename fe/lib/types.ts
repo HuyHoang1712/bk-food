@@ -8,7 +8,7 @@ export interface User {
   phone?: string
   address?: string
   restaurantId?: string
-    vehicleType?: string
+  vehicleType?: string
 }
 
 export type DeliveryStatus = "assigned" | "accepted" | "in_transit" | "completed" | "cancelled"
