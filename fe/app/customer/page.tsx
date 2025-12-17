@@ -1,25 +1,56 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Search, ShoppingCart, User, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { useStore } from "@/lib/store"
-import { mockRestaurants } from "@/lib/mock-data"
+// import { mockRestaurants } from "@/lib/mock-data" removed
 import { formatPrice } from "@/lib/utils/format"
 import type { Restaurant } from "@/lib/types"
 
 export default function CustomerPage() {
   const router = useRouter()
   const { currentUser, setCurrentUser, cart } = useStore()
+  
+  // State for data fetching
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // State for UI filters
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
 
   const categories = ["all", "Cơm", "Phở", "Bánh Mì", "Đồ Uống"]
 
-  const filteredRestaurants = mockRestaurants.filter((restaurant) => {
+  // Fetch restaurants on component mount
+  useEffect(() => {
+    const fetchRestaurants = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch('/api/restaurants')
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch restaurants')
+        }
+
+        const data = await response.json()
+        setRestaurants(data)
+      } catch (err) {
+        console.error("Error loading restaurants:", err)
+        setError("Không thể tải danh sách nhà hàng")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchRestaurants()
+  }, [])
+
+  const filteredRestaurants = restaurants.filter((restaurant) => {
     const matchesSearch = restaurant.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory = selectedCategory === "all" || restaurant.categories.includes(selectedCategory)
     return matchesSearch && matchesCategory && restaurant.isOpen
@@ -91,20 +122,39 @@ export default function CustomerPage() {
 
       {/* Restaurant List */}
       <main className="max-w-7xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredRestaurants.map((restaurant) => (
-            <RestaurantCard
-              key={restaurant.id}
-              restaurant={restaurant}
-              onClick={() => router.push(`/customer/restaurant/${restaurant.id}`)}
-            />
-          ))}
-        </div>
-
-        {filteredRestaurants.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">Không tìm thấy nhà hàng nào</p>
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
+        )}
+
+        {/* Error State */}
+        {!isLoading && error && (
+          <div className="text-center py-12">
+            <p className="text-red-500">{error}</p>
+          </div>
+        )}
+
+        {/* Data Display */}
+        {!isLoading && !error && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredRestaurants.map((restaurant) => (
+                <RestaurantCard
+                  key={restaurant.id}
+                  restaurant={restaurant}
+                  onClick={() => router.push(`/customer/restaurant/${restaurant.id}`)}
+                />
+              ))}
+            </div>
+
+            {filteredRestaurants.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500">Không tìm thấy nhà hàng nào</p>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

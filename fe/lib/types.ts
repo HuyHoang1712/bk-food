@@ -70,7 +70,7 @@ export interface Order {
   customerId: string
   restaurantId: string
   items: {
-    menuItem: MenuItem
+    menuItemName: String
     quantity: number
   }[]
   total: number

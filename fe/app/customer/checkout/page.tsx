@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, MapPin, Phone, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -16,10 +16,34 @@ import { mockRestaurants } from "@/lib/mock-data"
 import { formatPrice } from "@/lib/utils/format"
 import type { Order } from "@/lib/types"
 
+type CreateOrderRequest = {
+  restaurantId: number
+  items: { menuItemId: number; quantity: number }[]
+  deliveryAddress: string
+  customerPhone: string
+  note?: string
+}
+
+// --- Basic Auth helper (works in browser; fallback included just in case) ---
+function toBase64(str: string) {
+  if (typeof globalThis.btoa === "function") return globalThis.btoa(str)
+  return Buffer.from(str, "utf-8").toString("base64")
+}
+function basicAuth(email: string, password: string) {
+  return "Basic " + toBase64(`${email}:${password}`)
+}
+
 export default function CheckoutPage() {
   const router = useRouter()
-  const { cart, currentUser, clearCart, addOrder } = useStore()
+
+  // ✅ Assumption: your store keeps Basic Auth credentials somewhere after login.
+  // Adjust these fields to match your store shape.
+  const { cart, currentUser, clearCart, addOrder, authHeader } = useStore() as any
+  // Example expected:
+  // auth: { email: string; password: string }
+
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     address: currentUser?.address || "",
@@ -27,45 +51,101 @@ export default function CheckoutPage() {
     note: "",
   })
 
-  if (cart.length === 0) {
-    router.push("/customer/cart")
-    return null
-  }
+  // Keep form prefilled if user loads later
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      address: currentUser?.address || prev.address || "",
+      phone: currentUser?.phone || prev.phone || "",
+    }))
+  }, [currentUser?.address, currentUser?.phone])
 
-  const restaurantId = cart[0]?.menuItem.restaurantId
+  // Redirect if cart empty (avoid calling router.push during render)
+  useEffect(() => {
+    if (!cart || cart.length === 0) router.push("/customer/cart")
+  }, [cart, router])
+
+  if (!cart || cart.length === 0) return null
+
+  // Restaurant logic
+  const restaurantId = cart[0]?.menuItem?.restaurantId
   const restaurant = mockRestaurants.find((r) => r.id === restaurantId)
-  const subtotal = cart.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0)
+
+  // Optional safety: ensure cart is single-restaurant
+  const multiRestaurant = useMemo(() => {
+    const ids = new Set(cart.map((x: any) => x.menuItem?.restaurantId))
+    return ids.size > 1
+  }, [cart])
+
+  const subtotal = useMemo(
+    () => cart.reduce((sum: number, item: any) => sum + item.menuItem.price * item.quantity, 0),
+    [cart]
+  )
   const deliveryFee = restaurant?.deliveryFee || 0
   const total = subtotal + deliveryFee
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitting(true)
+    if (isSubmitting) return
 
-    // Create order
-    const newOrder: Order = {
-      id: `o${Date.now()}`,
-      customerId: currentUser?.id || "guest",
-      restaurantId: restaurantId || "",
-      items: cart.map((item) => ({
-        menuItem: item.menuItem,
-        quantity: item.quantity,
-      })),
-      total,
-      status: "pending",
-      deliveryAddress: formData.address,
-      customerPhone: formData.phone,
-      createdAt: new Date(),
-      note: formData.note || undefined,
+    setError(null)
+
+    if (multiRestaurant) {
+      setError("Giỏ hàng đang có món từ nhiều nhà hàng. Vui lòng chỉ chọn 1 nhà hàng.")
+      return
     }
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    if (!restaurantId) {
+      setError("Không xác định được nhà hàng.")
+      return
+    }
 
-    addOrder(newOrder)
-    clearCart()
+    // ✅ Basic Auth credentials (adjust to your store)
+    if (!authHeader) {
+  setError("Bạn chưa đăng nhập (thiếu Basic Auth). Vui lòng đăng nhập lại.")
+  return
+}
 
-    router.push(`/customer/orders/${newOrder.id}`)
+    setIsSubmitting(true)
+
+    try {
+      const payload: CreateOrderRequest = {
+        restaurantId: Number(restaurantId),
+        items: cart.map((item: any) => ({
+          menuItemId: Number(item.menuItem.id),
+          quantity: Number(item.quantity),
+        })),
+        deliveryAddress: formData.address,
+        customerPhone: formData.phone,
+        ...(formData.note?.trim() ? { note: formData.note.trim() } : {}),
+      }
+
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader, // ✅ Basic Auth header
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        const msg = await res.text().catch(() => "")
+        throw new Error(msg || `Request failed: ${res.status}`)
+      }
+
+      const savedOrder = await res.json()
+
+      // Optional: store it locally too (if your app uses it)
+      if (typeof addOrder === "function") addOrder(savedOrder)
+
+      clearCart()
+      router.push(`/customer/orders/${savedOrder.id}`)
+    } catch (err: any) {
+      setError(err?.message ?? "Đặt hàng thất bại.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -83,6 +163,12 @@ export default function CheckoutPage() {
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <Card className="p-4 border border-red-200">
+              <p className="text-sm text-red-600">{error}</p>
+            </Card>
+          )}
+
           {/* Delivery Info */}
           <Card className="p-4">
             <h3 className="font-semibold mb-4">Thông tin giao hàng</h3>
@@ -133,14 +219,17 @@ export default function CheckoutPage() {
 
           {/* Order Summary */}
           <Card className="p-4">
-            <h3 className="font-semibold mb-4">{restaurant?.name}</h3>
+            <h3 className="font-semibold mb-4">{restaurant?.name || "Nhà hàng"}</h3>
+
             <div className="space-y-3 mb-4">
-              {cart.map((item) => (
+              {cart.map((item: any) => (
                 <div key={item.menuItem.id} className="flex justify-between text-sm">
                   <span className="text-gray-600">
                     {item.quantity}x {item.menuItem.name}
                   </span>
-                  <span className="font-medium">{formatPrice(item.menuItem.price * item.quantity)}</span>
+                  <span className="font-medium">
+                    {formatPrice(item.menuItem.price * item.quantity)}
+                  </span>
                 </div>
               ))}
             </div>

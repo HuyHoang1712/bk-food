@@ -1,6 +1,6 @@
 "use client"
 
-import { use } from "react"
+import { use, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, ShoppingCart, Plus, Minus, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -8,30 +8,86 @@ import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useStore } from "@/lib/store"
-import { mockRestaurants, mockMenuItems, mockReviews } from "@/lib/mock-data"
+import { mockReviews } from "@/lib/mock-data"
 import { formatPrice, formatDate } from "@/lib/utils/format"
-import type { MenuItem, Review } from "@/lib/types"
+import type { MenuItem, Restaurant, Review } from "@/lib/types"
 import { useState } from "react"
 
 export default function RestaurantDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  // Unwrap params
   const { id } = use(params)
   const router = useRouter()
   const { cart, reviews: storeReviews } = useStore()
 
-  const restaurant = mockRestaurants.find((r) => r.id === id)
-  const menuItems = mockMenuItems.filter((item) => item.restaurantId === id)
-  const allReviews = [...mockReviews, ...storeReviews].filter((review) => review.restaurantId === id)
+  // 1. State for Fetched Data
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+  
+  // 2. Loading & Error States
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  if (!restaurant) {
+  // 3. Fetch Data Effect (Only for Restaurant & Menu Items)
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        
+        // Fetch both endpoints in parallel
+        const [restaurantRes, menuRes] = await Promise.all([
+          fetch(`/api/restaurants/${id}`),
+          fetch(`/api/restaurants/${id}/menu-items`)
+        ])
+
+        if (!restaurantRes.ok) throw new Error("Failed to fetch restaurant")
+        if (!menuRes.ok) throw new Error("Failed to fetch menu items")
+
+        const restaurantData = await restaurantRes.json()
+        const menuData = await menuRes.json()
+
+        setRestaurant(restaurantData)
+        setMenuItems(menuData)
+      } catch (err) {
+        console.error("Error loading data:", err)
+        setError("Không thể tải thông tin nhà hàng")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    if (id) {
+      fetchData()
+    }
+  }, [id])
+
+  // 4. Logic for Reviews (Combining Mock + Store)
+  // We filter the static mockReviews just like before
+  const allReviews = [...mockReviews, ...storeReviews].filter((review) => review.restaurantId === id)
+  
+  // 5. Logic for Categories (Derived from fetched menu items)
+  const categories = Array.from(new Set(menuItems.map((item) => item.category)))
+  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+
+  // Loading State
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Không tìm thấy nhà hàng</p>
+      <div className="min-h-screen flex items-center justify-center bg-blue-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
-  const categories = Array.from(new Set(menuItems.map((item) => item.category)))
-  const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+  // Error/Empty State
+  if (error || !restaurant) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-blue-50 gap-4">
+        <p className="text-gray-500">{error || "Không tìm thấy nhà hàng"}</p>
+        <Button variant="outline" onClick={() => router.back()}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Quay lại
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-blue-50">
@@ -54,8 +110,6 @@ export default function RestaurantDetailPage({ params }: { params: Promise<{ id:
           </div>
         </div>
       </header>
-
-      {/* Restaurant Info */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-start gap-4">
@@ -81,8 +135,6 @@ export default function RestaurantDetailPage({ params }: { params: Promise<{ id:
           </div>
         </div>
       </div>
-
-      {/* Menu */}
       <main className="max-w-7xl mx-auto px-4 py-6">
         {categories.map((category) => (
           <div key={category} className="mb-8">
@@ -96,7 +148,6 @@ export default function RestaurantDetailPage({ params }: { params: Promise<{ id:
             </div>
           </div>
         ))}
-
         {allReviews.length > 0 && (
           <div className="mt-8">
             <Separator className="mb-6" />

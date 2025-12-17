@@ -1,0 +1,53 @@
+
+INSERT INTO category (name) VALUES
+  ('Cơm'),
+  ('Phở'),
+  ('Bánh Mì'),
+  ('Đồ Uống'),
+  ('Trà Sữa'),
+  ('Việt Nam');
+
+INSERT INTO restaurant
+  (id, name, description, image, rating, delivery_time, delivery_fee, min_order, is_open)
+VALUES
+  (1, 'Cơm Tấm Sài Gòn', 'Cơm tấm ngon, giá sinh viên', '/uploads/vietnamese-broken-rice-restaurant.jpg',
+   4.5, '15-20 phút', 5000, 20000, 1),
+
+  (2, 'Phở Hà Nội', 'Phở bò, phở gà chính gốc', '/uploads/vietnamese-pho.png',
+   4.7, '20-25 phút', 8000, 25000, 1),
+
+  (3, 'Bánh Mì 37', 'Bánh mì thịt, trứng, pate', '/uploads/vietnamese-banh-mi-sandwich.jpg',
+   4.3, '10-15 phút', 3000, 15000, 1),
+
+  (4, 'Trà Sữa Gongcha', 'Trà sữa, trà trái cây tươi mát', '/uploads/bubble-tea-milk-tea-shop.jpg',
+   4.6, '15-20 phút', 5000, 20000, 1);
+
+
+INSERT INTO categorize (restaurant_id, category_id)
+SELECT 1, id FROM category WHERE name IN ('Cơm', 'Việt Nam')
+UNION ALL
+SELECT 2, id FROM category WHERE name IN ('Phở', 'Việt Nam')
+UNION ALL
+SELECT 3, id FROM category WHERE name IN ('Bánh Mì', 'Việt Nam')
+UNION ALL
+SELECT 4, id FROM category WHERE name IN ('Đồ Uống', 'Trà Sữa');
+
+
+
+INSERT INTO menu_item (id, restaurant_id, name, description, price, image, category_id, available) 
+VALUES 
+-- Cơm Tấm Sài Gòn
+(1, 1, 'Cơm Tấm Sườn Bì', 'Sườn nướng, bì, chả trứng', 35000, '/uploads/com-tam-suon-bi-vietnamese.jpg', 1, 1),
+(2, 1, 'Cơm Tấm Sườn Trứng', 'Sườn nướng, trứng ốp la', 30000, '/uploads/com-tam-suon-trung-vietnamese.jpg', 1, 1),
+
+-- Phở Hà Nội
+(3, 2, 'Phở Bò Tái', 'Phở bò tái, nước dùng đậm đà', 40000, '/uploads/pho-bo-tai-beef-noodle-soup.jpg', 2, 1),
+(4, 2, 'Phở Gà', 'Phở gà thơm ngon, thanh đạm', 35000, '/uploads/pho-ga-chicken-noodle-soup.jpg', 2, 1),
+
+-- Bánh Mì 37
+(5, 3, 'Bánh Mì Thịt', 'Thịt nguội, pate, rau thơm', 20000, '/uploads/banh-mi-thit-vietnamese-sandwich.jpg', 3, 1),
+(6, 3, 'Bánh Mì Trứng', 'Trứng ốp la, pate, rau', 18000, '/uploads/banh-mi-trung-egg-sandwich.jpg', 3, 1),
+
+-- Trà Sữa Gongcha
+(7, 4, 'Trà Sữa Trân Châu', 'Trà sữa trân châu đường đen', 25000, '/uploads/bubble-tea-brown-sugar.jpg', 4, 1),
+(8, 4, 'Trà Đào Cam Sả', 'Trà trái cây tươi mát', 28000, '/uploads/peach-tea-fruit-tea.jpg', 4, 1);

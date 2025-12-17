@@ -8,9 +8,10 @@ import { Badge } from "@/components/ui/badge"
 import { useStore } from "@/lib/store"
 import { mockRestaurants, mockOrders } from "@/lib/mock-data"
 import { formatPrice, formatDate } from "@/lib/utils/format"
-import type { Order } from "@/lib/types"
+import type { Order, Restaurant } from "@/lib/types"
+import { useEffect, useState } from "react"
 
-const statusColors = {
+const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
   confirmed: "bg-blue-100 text-blue-800",
   preparing: "bg-purple-100 text-purple-800",
@@ -19,7 +20,7 @@ const statusColors = {
   cancelled: "bg-red-100 text-red-800",
 }
 
-const statusLabels = {
+const statusLabels: Record<string, string> = {
   pending: "Chờ xác nhận",
   confirmed: "Đã xác nhận",
   preparing: "Đang chuẩn bị",
@@ -27,12 +28,37 @@ const statusLabels = {
   completed: "Hoàn thành",
   cancelled: "Đã hủy",
 }
+// ----------------------
 
 export default function OrdersPage() {
   const router = useRouter()
-  const { orders: storeOrders, currentUser } = useStore()
+  
+  const [orders, setOrders] = useState<Order[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const allOrders = [...mockOrders, ...storeOrders].filter((order) => order.customerId === currentUser?.id)
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch('/api/orders/me')
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch orders')
+        }
+
+        const data = await response.json()
+        setOrders(data)
+      } catch (err) {
+        console.error("Error loading orders:", err)
+        setError("Không thể tải danh sách đơn hàng")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchOrders()
+  }, [])
 
   return (
     <div className="min-h-screen bg-blue-50">
@@ -48,16 +74,34 @@ export default function OrdersPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6">
-        {allOrders.length === 0 ? (
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {!isLoading && error && (
+          <div className="text-center py-12 text-red-500">
+            {error}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && !error && orders.length === 0 && (
           <div className="text-center py-20">
             <p className="text-gray-500 mb-4">Chưa có đơn hàng nào</p>
             <Button onClick={() => router.push("/customer")} className="bg-blue-500 hover:bg-blue-600">
               Đặt món ngay
             </Button>
           </div>
-        ) : (
+        )}
+
+        {/* Order List */}
+        {!isLoading && !error && orders.length > 0 && (
           <div className="space-y-4">
-            {allOrders
+            {orders
               .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
               .map((order) => (
                 <OrderCard key={order.id} order={order} />
@@ -69,9 +113,26 @@ export default function OrdersPage() {
   )
 }
 
-function OrderCard({ order }: { order: Order }) {
+function OrderCard({ order }: { order: any }) { 
   const router = useRouter()
-  const restaurant = mockRestaurants.find((r) => r.id === order.restaurantId)
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
+
+  useEffect(() => {
+    const fetchRestaurant = async () => {
+      try {
+        const res = await fetch(`/api/restaurants/${order.restaurantId}`)
+        if (res.ok) {
+          const data = await res.json()
+          setRestaurant(data)
+        }
+      } catch (error) {
+        console.error("Failed to load restaurant name", error)
+      }
+    }
+    if (order.restaurantId) {
+      fetchRestaurant()
+    }
+  }, [order.restaurantId])
 
   return (
     <Card
@@ -80,16 +141,22 @@ function OrderCard({ order }: { order: Order }) {
     >
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className="font-semibold">{restaurant?.name}</h3>
+          <h3 className="font-semibold">
+            {restaurant ? restaurant.name : `Nhà hàng #${order.restaurantId}`}
+          </h3>
           <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
         </div>
-        <Badge className={statusColors[order.status]}>{statusLabels[order.status]}</Badge>
+        
+        {/* Using your status constants */}
+        <Badge className={statusColors[order.status] || "bg-gray-100 text-gray-800"}>
+          {statusLabels[order.status] || order.status}
+        </Badge>
       </div>
 
       <div className="space-y-1 mb-3">
-        {order.items.map((item, index) => (
+        {order.items.map((item: any, index: number) => (
           <p key={index} className="text-sm text-gray-600">
-            {item.quantity}x {item.menuItem.name}
+            {item.quantity}x {item.menuItemName}
           </p>
         ))}
       </div>

@@ -54,7 +54,7 @@ export const mockRestaurants: Restaurant[] = [
 export const mockMenuItems: MenuItem[] = [
   // Cơm Tấm Sài Gòn
   {
-    id: "m1",
+    id: "1",
     restaurantId: "1",
     name: "Cơm Tấm Sườn Bì",
     description: "Sườn nướng, bì, chả trứng",
@@ -64,7 +64,7 @@ export const mockMenuItems: MenuItem[] = [
     available: true,
   },
   {
-    id: "m2",
+    id: "2",
     restaurantId: "1",
     name: "Cơm Tấm Sườn Trứng",
     description: "Sườn nướng, trứng ốp la",
@@ -75,7 +75,7 @@ export const mockMenuItems: MenuItem[] = [
   },
   // Phở Hà Nội
   {
-    id: "m3",
+    id: "3",
     restaurantId: "2",
     name: "Phở Bò Tái",
     description: "Phở bò tái, nước dùng đậm đà",
@@ -85,7 +85,7 @@ export const mockMenuItems: MenuItem[] = [
     available: true,
   },
   {
-    id: "m4",
+    id: "4",
     restaurantId: "2",
     name: "Phở Gà",
     description: "Phở gà thơm ngon, thanh đạm",
@@ -96,7 +96,7 @@ export const mockMenuItems: MenuItem[] = [
   },
   // Bánh Mì 37
   {
-    id: "m5",
+    id: "5",
     restaurantId: "3",
     name: "Bánh Mì Thịt",
     description: "Thịt nguội, pate, rau thơm",
@@ -106,7 +106,7 @@ export const mockMenuItems: MenuItem[] = [
     available: true,
   },
   {
-    id: "m6",
+    id: "6",
     restaurantId: "3",
     name: "Bánh Mì Trứng",
     description: "Trứng ốp la, pate, rau",
@@ -117,7 +117,7 @@ export const mockMenuItems: MenuItem[] = [
   },
   // Trà Sữa Gongcha
   {
-    id: "m7",
+    id: "7",
     restaurantId: "4",
     name: "Trà Sữa Trân Châu",
     description: "Trà sữa trân châu đường đen",
@@ -127,7 +127,7 @@ export const mockMenuItems: MenuItem[] = [
     available: true,
   },
   {
-    id: "m8",
+    id: "8",
     restaurantId: "4",
     name: "Trà Đào Cam Sả",
     description: "Trà trái cây tươi mát",
@@ -152,6 +152,7 @@ export const mockUsers: User[] = [
     name: "Cơm Tấm Sài Gòn",
     email: "comtam@restaurant.com",
     role: "restaurant",
+    phone: "",
     restaurantId: "1",
   },
     {
@@ -164,80 +165,80 @@ export const mockUsers: User[] = [
   },
 ]
 
-export const mockOrders: Order[] = [
-  {
-    id: "o1",
-    customerId: "u1",
-    restaurantId: "1",
-    items: [
-      {
-        menuItem: mockMenuItems[0],
-        quantity: 2,
-      },
-    ],
-    total: 75000,
-    status: "completed",
-    deliveryAddress: "Ký túc xá khu A, ĐHBK",
-    customerPhone: "0901234567",
-    createdAt: new Date("2025-01-05"),
-  },
-  {
-    id: "o2",
-    customerId: "u1",
-    restaurantId: "2",
-    items: [
-      {
-        menuItem: mockMenuItems[2],
-        quantity: 1,
-      },
-      {
-        menuItem: mockMenuItems[3],
-        quantity: 1,
-      },
-    ],
-    total: 75000,
-    status: "confirmed",
-    deliveryAddress: "Ký túc xá khu B, ĐHBK",
-    customerPhone: "0901234567",
-    createdAt: new Date("2025-01-12T11:30:00"),
-    note: "Giao trước giờ học lúc 12h",
-    deliveryAssignmentId: "d1",
-  },
-  {
-    id: "o3",
-    customerId: "u1",
-    restaurantId: "3",
-    items: [
-      {
-        menuItem: mockMenuItems[4],
-        quantity: 3,
-      },
-    ],
-    total: 60000,
-    status: "delivering",
-    deliveryAddress: "Thư viện Tạ Quang Bửu",
-    customerPhone: "0901234567",
-    createdAt: new Date("2025-01-12T08:15:00"),
-    deliveryAssignmentId: "d2",
-  },
-  {
-    id: "o4",
-    customerId: "u1",
-    restaurantId: "4",
-    items: [
-      {
-        menuItem: mockMenuItems[7],
-        quantity: 2,
-      },
-    ],
-    total: 56000,
-    status: "completed",
-    deliveryAddress: "Ký túc xá khu A, ĐHBK",
-    customerPhone: "0901234567",
-    createdAt: new Date("2024-12-28T15:45:00"),
-    deliveryAssignmentId: "d3",
-  },
-]
+// export const mockOrders: Order[] = [
+//   {
+//     id: "o1",
+//     customerId: "u1",
+//     restaurantId: "1",
+//     items: [
+//       {
+//         menuItem: mockMenuItems[0],
+//         quantity: 2,
+//       },
+//     ],
+//     total: 75000,
+//     status: "completed",
+//     deliveryAddress: "Ký túc xá khu A, ĐHBK",
+//     customerPhone: "0901234567",
+//     createdAt: new Date("2025-01-05"),
+//   },
+//   {
+//     id: "o2",
+//     customerId: "u1",
+//     restaurantId: "2",
+//     items: [
+//       {
+//         menuItem: mockMenuItems[2],
+//         quantity: 1,
+//       },
+//       {
+//         menuItem: mockMenuItems[3],
+//         quantity: 1,
+//       },
+//     ],
+//     total: 75000,
+//     status: "confirmed",
+//     deliveryAddress: "Ký túc xá khu B, ĐHBK",
+//     customerPhone: "0901234567",
+//     createdAt: new Date("2025-01-12T11:30:00"),
+//     note: "Giao trước giờ học lúc 12h",
+//     deliveryAssignmentId: "d1",
+//   },
+//   {
+//     id: "o3",
+//     customerId: "u1",
+//     restaurantId: "3",
+//     items: [
+//       {
+//         menuItem: mockMenuItems[4],
+//         quantity: 3,
+//       },
+//     ],
+//     total: 60000,
+//     status: "delivering",
+//     deliveryAddress: "Thư viện Tạ Quang Bửu",
+//     customerPhone: "0901234567",
+//     createdAt: new Date("2025-01-12T08:15:00"),
+//     deliveryAssignmentId: "d2",
+//   },
+//   {
+//     id: "o4",
+//     customerId: "u1",
+//     restaurantId: "4",
+//     items: [
+//       {
+//         menuItem: mockMenuItems[7],
+//         quantity: 2,
+//       },
+//     ],
+//     total: 56000,
+//     status: "completed",
+//     deliveryAddress: "Ký túc xá khu A, ĐHBK",
+//     customerPhone: "0901234567",
+//     createdAt: new Date("2024-12-28T15:45:00"),
+//     deliveryAssignmentId: "d3",
+//   },
+// ]
 
 export const mockReviews: Review[] = [
   {

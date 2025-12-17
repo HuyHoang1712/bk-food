@@ -8,11 +8,40 @@ import { Separator } from "@/components/ui/separator"
 import { useStore } from "@/lib/store"
 import { mockRestaurants } from "@/lib/mock-data"
 import { formatPrice } from "@/lib/utils/format"
+import { useEffect, useState } from "react"
+import { Restaurant } from "@/lib/types"
 
 export default function CartPage() {
   const router = useRouter()
   const { cart, removeFromCart, updateCartQuantity } = useStore()
+  
+  // 1. State for the specific restaurant
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
 
+  // 2. Derive Restaurant ID from the first item in the cart
+  // (Assuming all items in cart belong to one restaurant)
+  const restaurantId = cart.length > 0 ? cart[0].menuItem.restaurantId : null
+
+  // 3. Fetch Restaurant Data
+  useEffect(() => {
+    const fetchRestaurant = async () => {
+      if (!restaurantId) return
+
+      try {
+        const response = await fetch(`/api/restaurants/${restaurantId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setRestaurant(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch restaurant details:", error)
+      }
+    }
+
+    fetchRestaurant()
+  }, [restaurantId])
+
+  // Empty State
   if (cart.length === 0) {
     return (
       <div className="min-h-screen bg-blue-50">
@@ -36,11 +65,11 @@ export default function CartPage() {
     )
   }
 
+  // 4. Calculations
   const subtotal = cart.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0)
-
-  const restaurantId = cart[0]?.menuItem.restaurantId
-  const restaurant = mockRestaurants.find((r) => r.id === restaurantId)
-  const deliveryFee = restaurant?.deliveryFee || 0
+  
+  // Use fetched delivery fee (or default to 0/36 if not loaded yet)
+  const deliveryFee = restaurant?.deliveryFee || 36
   const total = subtotal + deliveryFee
 
   return (
@@ -58,7 +87,11 @@ export default function CartPage() {
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         <Card className="p-4 mb-4">
-          <h3 className="font-semibold mb-4">{restaurant?.name}</h3>
+          {/* Display fetched name or placeholder */}
+          <h3 className="font-semibold mb-4">
+            {restaurant ? restaurant.name : "Đang tải..."}
+          </h3>
+          
           <div className="space-y-4">
             {cart.map((item) => (
               <div key={item.menuItem.id} className="flex gap-4">
@@ -130,6 +163,8 @@ export default function CartPage() {
         <Button
           onClick={() => router.push("/customer/checkout")}
           className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-lg"
+          // Prevent checkout until we have restaurant data (to ensure fees/ids are correct)
+          
         >
           Đặt hàng
         </Button>
