@@ -111,6 +111,16 @@ export default function HomePage() {
             >
               {loading ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>
+            <div className="text-center mt-4 pt-2">
+              <span className="text-sm text-gray-600">Chưa có tài khoản? </span>
+              <button
+                type="button"
+                onClick={() => router.push("/register")}
+                className="text-sm text-blue-600 hover:underline font-medium focus:outline-none"
+              >
+                Đăng ký ngay
+              </button>
+            </div>
           </form>
         </div>
 
