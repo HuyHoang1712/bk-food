@@ -92,6 +92,12 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
+    public List<Order>getAllOrders() {
+        return orderRepository.findAll();
+    }
+
+
+    @Transactional(readOnly = true)
     public List<Order> getOrdersByUser(String email) {
         return orderRepository.findByUser_EmailOrderByCreatedAtDesc(email);
     }

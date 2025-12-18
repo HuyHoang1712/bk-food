@@ -13,7 +13,8 @@ public record OrderResponse(
         String customerPhone,
         LocalDateTime createdAt,
         List<Item> items, 
-        String note
+        String note,
+        Integer deliveryAssignmentId
 ) {
     public record Item(
             Integer menuItemId,

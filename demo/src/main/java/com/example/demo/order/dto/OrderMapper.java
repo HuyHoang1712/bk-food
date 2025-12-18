@@ -33,7 +33,8 @@ public class OrderMapper {
                 o.getCustomerPhone(),
                 o.getCreatedAt(),
                 items,
-                o.getNote() // <-- requires Order has `note` field + getter
+                o.getNote(),
+                o.getId()
         );
     }
 

@@ -1,4 +1,4 @@
-import type { Restaurant, MenuItem, Order, Review, User, DeliveryAssignment} from "./types"
+import type { Restaurant, MenuItem, MockOrder, Review, User, DeliveryAssignment} from "./types"
 
 export const mockRestaurants: Restaurant[] = [
   {
@@ -165,80 +165,80 @@ export const mockUsers: User[] = [
   },
 ]
 
-// export const mockOrders: Order[] = [
-//   {
-//     id: "o1",
-//     customerId: "u1",
-//     restaurantId: "1",
-//     items: [
-//       {
-//         menuItem: mockMenuItems[0],
-//         quantity: 2,
-//       },
-//     ],
-//     total: 75000,
-//     status: "completed",
-//     deliveryAddress: "Ký túc xá khu A, ĐHBK",
-//     customerPhone: "0901234567",
-//     createdAt: new Date("2025-01-05"),
-//   },
-//   {
-//     id: "o2",
-//     customerId: "u1",
-//     restaurantId: "2",
-//     items: [
-//       {
-//         menuItem: mockMenuItems[2],
-//         quantity: 1,
-//       },
-//       {
-//         menuItem: mockMenuItems[3],
-//         quantity: 1,
-//       },
-//     ],
-//     total: 75000,
-//     status: "confirmed",
-//     deliveryAddress: "Ký túc xá khu B, ĐHBK",
-//     customerPhone: "0901234567",
-//     createdAt: new Date("2025-01-12T11:30:00"),
-//     note: "Giao trước giờ học lúc 12h",
-//     deliveryAssignmentId: "d1",
-//   },
-//   {
-//     id: "o3",
-//     customerId: "u1",
-//     restaurantId: "3",
-//     items: [
-//       {
-//         menuItem: mockMenuItems[4],
-//         quantity: 3,
-//       },
-//     ],
-//     total: 60000,
-//     status: "delivering",
-//     deliveryAddress: "Thư viện Tạ Quang Bửu",
-//     customerPhone: "0901234567",
-//     createdAt: new Date("2025-01-12T08:15:00"),
-//     deliveryAssignmentId: "d2",
-//   },
-//   {
-//     id: "o4",
-//     customerId: "u1",
-//     restaurantId: "4",
-//     items: [
-//       {
-//         menuItem: mockMenuItems[7],
-//         quantity: 2,
-//       },
-//     ],
-//     total: 56000,
-//     status: "completed",
-//     deliveryAddress: "Ký túc xá khu A, ĐHBK",
-//     customerPhone: "0901234567",
-//     createdAt: new Date("2024-12-28T15:45:00"),
-//     deliveryAssignmentId: "d3",
-//   },
-// ]
+export const mockOrders: MockOrder[] = [
+  {
+    id: "o1",
+    customerId: "u1",
+    restaurantId: "1",
+    items: [
+      {
+        menuItem: mockMenuItems[0],
+        quantity: 2,
+      },
+    ],
+    total: 75000,
+    status: "completed",
+    deliveryAddress: "Ký túc xá khu A, ĐHBK",
+    customerPhone: "0901234567",
+    createdAt: new Date("2025-01-05"),
+  },
+  {
+    id: "o2",
+    customerId: "u1",
+    restaurantId: "2",
+    items: [
+      {
+        menuItem: mockMenuItems[2],
+        quantity: 1,
+      },
+      {
+        menuItem: mockMenuItems[3],
+        quantity: 1,
+      },
+    ],
+    total: 75000,
+    status: "confirmed",
+    deliveryAddress: "Ký túc xá khu B, ĐHBK",
+    customerPhone: "0901234567",
+    createdAt: new Date("2025-01-12T11:30:00"),
+    note: "Giao trước giờ học lúc 12h",
+    deliveryAssignmentId: "d1",
+  },
+  {
+    id: "o3",
+    customerId: "u1",
+    restaurantId: "3",
+    items: [
+      {
+        menuItem: mockMenuItems[4],
+        quantity: 3,
+      },
+    ],
+    total: 60000,
+    status: "delivering",
+    deliveryAddress: "Thư viện Tạ Quang Bửu",
+    customerPhone: "0901234567",
+    createdAt: new Date("2025-01-12T08:15:00"),
+    deliveryAssignmentId: "d2",
+  },
+  {
+    id: "o4",
+    customerId: "u1",
+    restaurantId: "4",
+    items: [
+      {
+        menuItem: mockMenuItems[7],
+        quantity: 2,
+      },
+    ],
+    total: 56000,
+    status: "completed",
+    deliveryAddress: "Ký túc xá khu A, ĐHBK",
+    customerPhone: "0901234567",
+    createdAt: new Date("2024-12-28T15:45:00"),
+    deliveryAssignmentId: "d3",
+  },
+]
 
 export const mockReviews: Review[] = [
   {

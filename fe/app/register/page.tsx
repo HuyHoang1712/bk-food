@@ -1,28 +1,90 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation" // Use next/router if on Pages Router
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+
+type Restaurant = {
+  id: number
+  name: string
+  description?: string
+  image?: string
+  rating?: number
+  deliveryTime?: string
+  deliveryFee?: number
+  minOrder?: number
+  isOpen?: boolean
+  categories?: string[]
+}
 
 export default function RegisterPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Combined state for all form fields
+  // restaurants fetching state
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
+  const [restaurantsLoading, setRestaurantsLoading] = useState(false)
+  const [restaurantsError, setRestaurantsError] = useState<string | null>(null)
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     phone: "",
-    role: "customer", // Default role
+    role: "customer",
     address: "",
-    restaurantId: "",
-    vehicleType: "Xe máy", // Default vehicle
+    restaurantId: "", // will store selected restaurant id as string
+    vehicleType: "motorbike",
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
+
+  // ✅ fetch restaurants when role becomes "restaurant"
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchRestaurants = async () => {
+      setRestaurantsLoading(true)
+      setRestaurantsError(null)
+
+      try {
+        const res = await fetch("/api/restaurants", { method: "GET" })
+        if (!res.ok) throw new Error("Không tải được danh sách nhà hàng.")
+
+        const data: Restaurant[] = await res.json()
+        if (cancelled) return
+
+        setRestaurants(data || [])
+
+        // auto-select first restaurant if nothing selected yet
+        if (!formData.restaurantId && data?.length) {
+          setFormData((prev) => ({ ...prev, restaurantId: String(data[0].id) }))
+        }
+      } catch (err: any) {
+        if (cancelled) return
+        setRestaurants([])
+        setRestaurantsError(err?.message || "Có lỗi khi tải nhà hàng.")
+      } finally {
+        if (!cancelled) setRestaurantsLoading(false)
+      }
+    }
+
+    if (formData.role === "restaurant") fetchRestaurants()
+    else {
+      // reset restaurant selection when switching away
+      setRestaurants([])
+      setRestaurantsLoading(false)
+      setRestaurantsError(null)
+      setFormData((prev) => ({ ...prev, restaurantId: "" }))
+    }
+
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.role])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,8 +92,6 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      // 1. Construct the payload
-      // We start with common fields
       const payload: any = {
         name: formData.name,
         email: formData.email,
@@ -41,15 +101,16 @@ export default function RegisterPage() {
         address: formData.address,
       }
 
-      // 2. Add specific fields based on role 
       if (formData.role === "restaurant") {
-        // Ensure restaurantId is a number if your backend requires it
-        payload.restaurantId = Number(formData.restaurantId) || 0
+        // ✅ send the selected restaurant id
+        payload.restaurantId = Number(formData.restaurantId)
+        if (!payload.restaurantId) {
+          throw new Error("Vui lòng chọn nhà hàng.")
+        }
       } else if (formData.role === "delivery") {
         payload.vehicleType = formData.vehicleType
       }
 
-      // 3. Send Request
       const res = await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -57,14 +118,17 @@ export default function RegisterPage() {
       })
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.message || "Đăng ký thất bại.")
+        let msg = "Đăng ký thất bại."
+        try {
+          const data = await res.json()
+          msg = data?.message || msg
+        } catch {}
+        throw new Error(msg)
       }
 
-      // 4. Success -> Redirect to Login
-      router.push("/") // Or wherever your login page is
+      router.push("/")
     } catch (err: any) {
-      setError(err.message || "Có lỗi xảy ra, vui lòng thử lại.")
+      setError(err?.message || "Có lỗi xảy ra, vui lòng thử lại.")
     } finally {
       setLoading(false)
     }
@@ -82,7 +146,6 @@ export default function RegisterPage() {
           <h2 className="text-xl font-semibold text-center">Đăng ký</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Grid for Name and Phone */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm text-gray-700">Họ và tên</label>
@@ -110,7 +173,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Email */}
             <div className="space-y-2">
               <label className="text-sm text-gray-700">Email</label>
               <input
@@ -124,7 +186,6 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Password */}
             <div className="space-y-2">
               <label className="text-sm text-gray-700">Mật khẩu</label>
               <input
@@ -138,7 +199,6 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Address */}
             <div className="space-y-2">
               <label className="text-sm text-gray-700">Địa chỉ</label>
               <input
@@ -152,7 +212,6 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* Role Selection */}
             <div className="space-y-2">
               <label className="text-sm text-gray-700">Vai trò</label>
               <select
@@ -167,25 +226,44 @@ export default function RegisterPage() {
               </select>
             </div>
 
-            {/* --- Conditional Fields --- */}
-            
-            {/* Show Restaurant ID only if role is Restaurant */}
+            {/* ✅ Restaurant dropdown */}
             {formData.role === "restaurant" && (
               <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                <label className="text-sm text-gray-700">Restaurant ID</label>
-                <input
-                  name="restaurantId"
-                  type="number"
-                  placeholder="Nhập ID nhà hàng"
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={formData.restaurantId}
-                  onChange={handleChange}
-                  required
-                />
+                <label className="text-sm text-gray-700">Chọn nhà hàng</label>
+
+                {restaurantsLoading ? (
+                  <div className="text-sm text-gray-600 bg-gray-50 border rounded-md px-3 py-2">
+                    Đang tải danh sách nhà hàng...
+                  </div>
+                ) : restaurantsError ? (
+                  <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3">
+                    {restaurantsError}
+                  </div>
+                ) : (
+                  <select
+                    name="restaurantId"
+                    value={formData.restaurantId}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    required
+                  >
+                    {restaurants.map((r) => (
+                      <option key={r.id} value={String(r.id)}>
+                        {r.name} (ID: {r.id})
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {!restaurantsLoading && !restaurantsError && restaurants.length === 0 && (
+                  <div className="text-sm text-gray-600">
+                    Chưa có nhà hàng nào để chọn.
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Show Vehicle Type only if role is Delivery */}
+            {/* Vehicle Type */}
             {formData.role === "delivery" && (
               <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
                 <label className="text-sm text-gray-700">Loại xe</label>
@@ -202,14 +280,12 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Error Message */}
             {error && (
               <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg p-3 text-center">
                 {error}
               </p>
             )}
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}

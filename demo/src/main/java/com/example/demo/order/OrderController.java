@@ -51,6 +51,15 @@ public class OrderController {
         return ResponseEntity.ok(OrderMapper.toResponse(order));
     }
 
+    @GetMapping
+public ResponseEntity<List<OrderResponse>> getAllOrders() {
+    List<Order> orders = orderService.getAllOrders();
+    List<OrderResponse> responses = orders.stream()
+            .map(OrderMapper::toResponse)
+            .toList(); 
+    return ResponseEntity.ok(responses);
+}
+
     // GET /api/orders/restaurant/{restaurantId}
     @GetMapping("/restaurant/{restaurantId}")
     public ResponseEntity<List<OrderResponse>> getOrdersByRestaurant(@PathVariable Integer restaurantId) {

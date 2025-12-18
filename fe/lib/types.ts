@@ -83,6 +83,24 @@ export interface Order {
   deliveryAssignmentId?: string
 }
 
+export interface MockOrder {
+  id: string
+  customerId: string
+  restaurantId: string
+  items: {
+    menuItem: MenuItem
+    quantity: number
+  }[]
+  total: number
+  status: "pending" | "confirmed" | "preparing" | "delivering" | "completed" | "cancelled"
+  deliveryAddress: string
+  customerPhone: string
+  createdAt: Date
+  note?: string
+  deliveryAssignmentId?: string
+}
+
+
 export interface Review {
   id: string
   orderId: string

@@ -32,30 +32,43 @@ const statusLabels: Record<string, string> = {
 
 export default function OrdersPage() {
   const router = useRouter()
-  
+  const { authHeader } = useStore();
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchOrders = async () => {
-      try {
+    // Optional: Guard clause if user isn't logged in yet
+    if (!authHeader) {
+        console.warn("No auth header found")
+        return 
+    }
+
+    try {
         setIsLoading(true)
-        const response = await fetch('/api/orders/me')
+        
+        // 2. Pass the header in the options object
+        const response = await fetch('/api/orders/me', {
+            method: 'GET', // Good practice to be explicit
+            headers: {
+                "Authorization": authHeader 
+            }
+        })
         
         if (!response.ok) {
-          throw new Error('Failed to fetch orders')
+            throw new Error('Failed to fetch orders')
         }
 
         const data = await response.json()
         setOrders(data)
-      } catch (err) {
+    } catch (err) {
         console.error("Error loading orders:", err)
         setError("Không thể tải danh sách đơn hàng")
-      } finally {
+    } finally {
         setIsLoading(false)
-      }
     }
+}
 
     fetchOrders()
   }, [])

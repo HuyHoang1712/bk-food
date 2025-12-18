@@ -13,8 +13,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 import com.example.demo.security.CustomUserDetailsService;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -30,14 +33,18 @@ SecurityFilterChain apiChain(HttpSecurity http) throws Exception {
       .csrf(csrf -> csrf.disable())
       .cors(Customizer.withDefaults())
       .formLogin(form -> form.disable())
-      .httpBasic(Customizer.withDefaults())
-      .authorizeHttpRequests(auth -> auth
-          .requestMatchers("/api/users").permitAll()
-          .anyRequest().authenticated()
-      )
+      .httpBasic(basic -> basic
+            // This lambda intercepts the 401 error and prevents the "WWW-Authenticate" header
+            // which is what triggers the browser popup.
+            .authenticationEntryPoint((request, response, authException) -> {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage());
+            }))
+    //   .authorizeHttpRequests(auth -> auth
+    //       .requestMatchers("/api/**").permitAll()
+    //       .anyRequest().authenticated()
+    //   )
       .build();
 }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
