@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import type { Restaurant, MenuItem, Order, Review, User, DeliveryAssignment} from "./types"
+=======
+import type { Restaurant, MenuItem, MockOrder, Review, User, DeliveryAssignment} from "./types"
+>>>>>>> origin/nam-branch
 
 export const mockRestaurants: Restaurant[] = [
   {
@@ -54,7 +58,11 @@ export const mockRestaurants: Restaurant[] = [
 export const mockMenuItems: MenuItem[] = [
   // Cơm Tấm Sài Gòn
   {
+<<<<<<< HEAD
     id: "m1",
+=======
+    id: "1",
+>>>>>>> origin/nam-branch
     restaurantId: "1",
     name: "Cơm Tấm Sườn Bì",
     description: "Sườn nướng, bì, chả trứng",
@@ -64,7 +72,11 @@ export const mockMenuItems: MenuItem[] = [
     available: true,
   },
   {
+<<<<<<< HEAD
     id: "m2",
+=======
+    id: "2",
+>>>>>>> origin/nam-branch
     restaurantId: "1",
     name: "Cơm Tấm Sườn Trứng",
     description: "Sườn nướng, trứng ốp la",
@@ -75,7 +87,11 @@ export const mockMenuItems: MenuItem[] = [
   },
   // Phở Hà Nội
   {
+<<<<<<< HEAD
     id: "m3",
+=======
+    id: "3",
+>>>>>>> origin/nam-branch
     restaurantId: "2",
     name: "Phở Bò Tái",
     description: "Phở bò tái, nước dùng đậm đà",
@@ -85,7 +101,11 @@ export const mockMenuItems: MenuItem[] = [
     available: true,
   },
   {
+<<<<<<< HEAD
     id: "m4",
+=======
+    id: "4",
+>>>>>>> origin/nam-branch
     restaurantId: "2",
     name: "Phở Gà",
     description: "Phở gà thơm ngon, thanh đạm",
@@ -96,7 +116,11 @@ export const mockMenuItems: MenuItem[] = [
   },
   // Bánh Mì 37
   {
+<<<<<<< HEAD
     id: "m5",
+=======
+    id: "5",
+>>>>>>> origin/nam-branch
     restaurantId: "3",
     name: "Bánh Mì Thịt",
     description: "Thịt nguội, pate, rau thơm",
@@ -106,7 +130,11 @@ export const mockMenuItems: MenuItem[] = [
     available: true,
   },
   {
+<<<<<<< HEAD
     id: "m6",
+=======
+    id: "6",
+>>>>>>> origin/nam-branch
     restaurantId: "3",
     name: "Bánh Mì Trứng",
     description: "Trứng ốp la, pate, rau",
@@ -117,7 +145,11 @@ export const mockMenuItems: MenuItem[] = [
   },
   // Trà Sữa Gongcha
   {
+<<<<<<< HEAD
     id: "m7",
+=======
+    id: "7",
+>>>>>>> origin/nam-branch
     restaurantId: "4",
     name: "Trà Sữa Trân Châu",
     description: "Trà sữa trân châu đường đen",
@@ -127,7 +159,11 @@ export const mockMenuItems: MenuItem[] = [
     available: true,
   },
   {
+<<<<<<< HEAD
     id: "m8",
+=======
+    id: "8",
+>>>>>>> origin/nam-branch
     restaurantId: "4",
     name: "Trà Đào Cam Sả",
     description: "Trà trái cây tươi mát",
@@ -152,6 +188,10 @@ export const mockUsers: User[] = [
     name: "Cơm Tấm Sài Gòn",
     email: "comtam@restaurant.com",
     role: "restaurant",
+<<<<<<< HEAD
+=======
+    phone: "",
+>>>>>>> origin/nam-branch
     restaurantId: "1",
   },
     {
@@ -162,6 +202,7 @@ export const mockUsers: User[] = [
     phone: "0843301338",
     vehicleType: "Xe máy Honda Vision",
   },
+<<<<<<< HEAD
   {
     id: "u4",
     name: "Trần Quản Trị",
@@ -172,6 +213,11 @@ export const mockUsers: User[] = [
 ]
 
 export const mockOrders: Order[] = [
+=======
+]
+
+export const mockOrders: MockOrder[] = [
+>>>>>>> origin/nam-branch
   {
     id: "o1",
     customerId: "u1",

@@ -1,13 +1,20 @@
 "use client"
 
+<<<<<<< HEAD
 import { use } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, MapPin, Phone, Clock, CheckCircle2 } from "lucide-react"
+=======
+import { use, useEffect, useState } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { ArrowLeft, MapPin, Phone, Clock, CheckCircle2, ChefHat, Truck, Package, ClipboardList } from "lucide-react"
+>>>>>>> origin/nam-branch
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { useStore } from "@/lib/store"
+<<<<<<< HEAD
 import { mockRestaurants, mockOrders } from "@/lib/mock-data"
 import { formatPrice, formatDate } from "@/lib/utils/format"
 
@@ -16,11 +23,27 @@ const statusColors = {
   confirmed: "bg-blue-100 text-blue-800",
   preparing: "bg-purple-100 text-purple-800",
   delivering: "bg-orange-100 text-orange-800",
+=======
+import { mockRestaurants } from "@/lib/mock-data"
+import { formatPrice, formatDate } from "@/lib/utils/format"
+import { Order, Restaurant } from "@/lib/types"
+
+// --- Constants ---
+const statusColors: Record<string, string> = {
+  pending: "bg-yellow-100 text-yellow-800",
+  confirmed: "bg-blue-100 text-blue-800",
+  preparing: "bg-purple-100 text-purple-800",
+  delivering: "bg-blue-100 text-blue-800",
+>>>>>>> origin/nam-branch
   completed: "bg-green-100 text-green-800",
   cancelled: "bg-red-100 text-red-800",
 }
 
+<<<<<<< HEAD
 const statusLabels = {
+=======
+const statusLabels: Record<string, string> = {
+>>>>>>> origin/nam-branch
   pending: "Chờ xác nhận",
   confirmed: "Đã xác nhận",
   preparing: "Đang chuẩn bị",
@@ -30,6 +53,7 @@ const statusLabels = {
 }
 
 const statusSteps = [
+<<<<<<< HEAD
   { key: "pending", label: "Đặt hàng", icon: Clock },
   { key: "confirmed", label: "Xác nhận", icon: CheckCircle2 },
   { key: "preparing", label: "Chuẩn bị", icon: Clock },
@@ -50,6 +74,74 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-500 mb-4">Không tìm thấy đơn hàng</p>
+=======
+  { key: "pending", label: "Đã đặt", icon: ClipboardList },
+  { key: "confirmed", label: "Đã xác nhận", icon: CheckCircle2 },
+  { key: "preparing", label: "Đang chuẩn bị", icon: ChefHat },
+  { key: "delivering", label: "Đang giao", icon: Truck },
+  { key: "completed", label: "Hoàn thành", icon: Package },
+]
+
+export default function OrderDetailPage() {
+  // 1. Hooks must be declared at the very top (Unconditional)
+  const params = useParams()
+  const router = useRouter()
+  const id = params?.id as string // Safe access to ID
+
+  // 2. State
+  const [order, setOrder] = useState<any | null>(null) // Using 'any' to match your specific JSON response structure
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // 3. Effect
+  useEffect(() => {
+    const fetchOrderAndRestaurant = async () => {
+      if (!id) return
+
+      try {
+        setIsLoading(true)
+        
+        // A. Fetch Order
+        const orderRes = await fetch(`/api/orders/${id}`)
+        if (!orderRes.ok) throw new Error("Order not found")
+        const orderData = await orderRes.json()
+        setOrder(orderData)
+
+        // B. Fetch Restaurant (if we have a restaurantId)
+        if (orderData.restaurantId) {
+          const restRes = await fetch(`/api/restaurants/${orderData.restaurantId}`)
+          if (restRes.ok) {
+            const restData = await restRes.json()
+            setRestaurant(restData)
+          }
+        }
+      } catch (err) {
+        console.error(err)
+        setError("Không thể tải thông tin đơn hàng")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchOrderAndRestaurant()
+  }, [id])
+
+  // 4. Conditional Rendering (Only SAFE after all hooks are declared)
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+      </div>
+    )
+  }
+
+  if (error || !order) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-orange-50">
+        <div className="text-center">
+          <p className="text-gray-500 mb-4">{error || "Không tìm thấy đơn hàng"}</p>
+>>>>>>> origin/nam-branch
           <Button onClick={() => router.push("/customer/orders")} className="bg-orange-500 hover:bg-orange-600">
             Quay lại
           </Button>
@@ -58,8 +150,19 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     )
   }
 
+<<<<<<< HEAD
   const restaurant = mockRestaurants.find((r) => r.id === order.restaurantId)
   const currentStepIndex = statusSteps.findIndex((step) => step.key === order.status)
+=======
+  const currentStepIndex = statusSteps.findIndex((step) => step.key === order.status)
+  
+  // Calculate pricing
+  // Since items in your JSON don't have prices, we rely on the total in the order object
+  const deliveryFee = restaurant?.deliveryFee || 0
+  const orderTotal = order.total || 0
+  // Estimate subtotal if not provided
+  const estimatedSubtotal = Math.max(0, orderTotal - deliveryFee)
+>>>>>>> origin/nam-branch
 
   return (
     <div className="min-h-screen bg-orange-50">
@@ -75,14 +178,24 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6">
+<<<<<<< HEAD
         {/* Status */}
+=======
+        {/* Status Card */}
+>>>>>>> origin/nam-branch
         <Card className="p-6 mb-4">
           <div className="flex items-center justify-between mb-6">
             <div>
               <p className="text-sm text-gray-600 mb-1">Đơn hàng #{order.id}</p>
               <p className="text-xs text-gray-500">{formatDate(order.createdAt)}</p>
             </div>
+<<<<<<< HEAD
             <Badge className={statusColors[order.status]}>{statusLabels[order.status]}</Badge>
+=======
+            <Badge className={statusColors[order.status] || "bg-gray-100"}>
+              {statusLabels[order.status] || order.status}
+            </Badge>
+>>>>>>> origin/nam-branch
           </div>
 
           {/* Progress Steps */}
@@ -97,7 +210,11 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   return (
                     <div key={step.key} className="flex flex-col items-center flex-1">
                       <div
+<<<<<<< HEAD
                         className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
+=======
+                        className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 z-10 ${
+>>>>>>> origin/nam-branch
                           isCompleted ? "bg-orange-500 text-white" : "bg-gray-200 text-gray-400"
                         } ${isCurrent ? "ring-4 ring-orange-200" : ""}`}
                       >
@@ -110,7 +227,11 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   )
                 })}
               </div>
+<<<<<<< HEAD
               <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 -z-10">
+=======
+              <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200">
+>>>>>>> origin/nam-branch
                 <div
                   className="h-full bg-orange-500 transition-all duration-500"
                   style={{ width: `${(currentStepIndex / (statusSteps.length - 1)) * 100}%` }}
@@ -120,6 +241,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           )}
         </Card>
 
+<<<<<<< HEAD
         {/* Restaurant Info */}
         <Card className="p-4 mb-4">
           <h3 className="font-semibold mb-3">{restaurant?.name}</h3>
@@ -130,6 +252,22 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   {item.quantity}x {item.menuItem.name}
                 </span>
                 <span className="font-medium">{formatPrice(item.menuItem.price * item.quantity)}</span>
+=======
+        {/* Restaurant Info & Items */}
+        <Card className="p-4 mb-4">
+          <h3 className="font-semibold mb-3">{restaurant?.name || "Đang tải..."}</h3>
+          <div className="space-y-3">
+            {order.items.map((item: any, index: number) => (
+              <div key={index} className="flex justify-between text-sm">
+                <span className="text-gray-600">
+                  {/* Handle both menuItemName (your JSON) or menuItem.name (standard) */}
+                  {item.quantity}x {item.menuItemName || item.menuItem?.name}
+                </span>
+                {/* Your item JSON doesn't have price, so we leave this blank or show a placeholder */}
+                <span className="font-medium text-gray-400">
+                  {item.price ? formatPrice(item.price) : "--"}
+                </span>
+>>>>>>> origin/nam-branch
               </div>
             ))}
           </div>
@@ -170,6 +308,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           <h3 className="font-semibold mb-3">Chi tiết thanh toán</h3>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
+<<<<<<< HEAD
               <span className="text-gray-600">Tạm tính</span>
               <span>
                 {formatPrice(order.items.reduce((sum, item) => sum + item.menuItem.price * item.quantity, 0))}
@@ -178,11 +317,23 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Phí giao hàng</span>
               <span>{formatPrice(restaurant?.deliveryFee || 0)}</span>
+=======
+              <span className="text-gray-600">Tạm tính (Ước lượng)</span>
+              <span>{formatPrice(estimatedSubtotal)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Phí giao hàng</span>
+              <span>{formatPrice(deliveryFee)}</span>
+>>>>>>> origin/nam-branch
             </div>
             <Separator />
             <div className="flex justify-between font-semibold text-lg">
               <span>Tổng cộng</span>
+<<<<<<< HEAD
               <span className="text-orange-600">{formatPrice(order.total)}</span>
+=======
+              <span className="text-orange-600">{formatPrice(orderTotal)}</span>
+>>>>>>> origin/nam-branch
             </div>
             <div className="pt-2 border-t">
               <p className="text-sm text-gray-600">Thanh toán khi nhận hàng (COD)</p>
@@ -202,4 +353,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       </main>
     </div>
   )
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/nam-branch

@@ -6,9 +6,16 @@ import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { useStore } from "@/lib/store"
+<<<<<<< HEAD
 import { mockRestaurants, mockMenuItems, mockOrders } from "@/lib/mock-data"
 import { formatPrice, formatDate } from "@/lib/utils/format"
 import type { MenuItem, Order } from "@/lib/types"
+=======
+// import { mockRestaurants, mockMenuItems, mockOrders } from "@/lib/mock-data"
+import { formatPrice, formatDate } from "@/lib/utils/format"
+import type { MenuItem, Order, Restaurant } from "@/lib/types"
+import { useEffect, useMemo, useState } from "react"
+>>>>>>> origin/nam-branch
 
 const statusColors = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -30,6 +37,7 @@ const statusLabels = {
 
 export default function RestaurantDashboard() {
   const router = useRouter()
+<<<<<<< HEAD
   const { currentUser, setCurrentUser, orders: storeOrders, updateOrderStatus } = useStore()
 
   const restaurant = mockRestaurants.find((r) => r.id === currentUser?.restaurantId)
@@ -49,6 +57,116 @@ export default function RestaurantDashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p>Không tìm thấy nhà hàng</p>
+=======
+
+  const currentUser = useStore((s) => s.currentUser)
+  const authHeader = useStore((s) => s.authHeader)
+  const logout = useStore((s) => s.logout)
+  const updateOrderStatus = useStore((s) => s.updateOrderStatus)
+
+  const restaurantId = currentUser?.restaurantId
+
+  // fetched data
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
+
+  // ui state
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        setError(null)
+        setIsLoading(true)
+
+        if (!restaurantId) {
+          setRestaurant(null)
+          setMenuItems([])
+          setOrders([])
+          setError("Tài khoản này chưa gắn với nhà hàng (restaurantId bị thiếu).")
+          return
+        }
+
+        if (!authHeader) {
+          setRestaurant(null)
+          setMenuItems([])
+          setOrders([])
+          setError("Bạn chưa đăng nhập (thiếu Basic Auth). Vui lòng đăng nhập lại.")
+          return
+        }
+
+        const headers: HeadersInit = {
+          Authorization: authHeader, // ✅ "Basic ..."
+        }
+
+        const [restaurantRes, menuRes, ordersRes] = await Promise.all([
+          fetch(`/api/restaurants/${restaurantId}`, { headers }),
+          fetch(`/api/restaurants/${restaurantId}/menu-items`, { headers }),
+          fetch(`/api/orders/restaurant/${restaurantId}`, { headers }),
+        ])
+
+        if (!restaurantRes.ok) throw new Error("Failed to fetch restaurant")
+        if (!menuRes.ok) throw new Error("Failed to fetch menu items")
+        if (!ordersRes.ok) throw new Error("Failed to fetch orders")
+
+        const restaurantData = await restaurantRes.json()
+        const menuData = await menuRes.json()
+        const ordersData = await ordersRes.json()
+
+        setRestaurant(restaurantData)
+        setMenuItems(Array.isArray(menuData) ? menuData : [])
+        setOrders(Array.isArray(ordersData) ? ordersData : [])
+      } catch (err) {
+        console.error(err)
+        setError("Không thể tải dữ liệu nhà hàng.")
+        setRestaurant(null)
+        setMenuItems([])
+        setOrders([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchAll()
+  }, [restaurantId, authHeader])
+
+  const pendingOrders = useMemo(
+    () => orders.filter((o) => o.status === "pending" || o.status === "confirmed"),
+    [orders]
+  )
+  const activeOrders = useMemo(
+    () => orders.filter((o) => o.status === "preparing" || o.status === "delivering"),
+    [orders]
+  )
+  const completedOrders = useMemo(() => orders.filter((o) => o.status === "completed"), [orders])
+
+  const handleLogout = () => {
+    logout()
+    router.push("/")
+  }
+
+  // Optional: keep your UI update function working (local + store)
+  const handleUpdateStatus = (orderId: string, status: Order["status"]) => {
+    updateOrderStatus(orderId, status) // updates Zustand (if you still use it elsewhere)
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o))) // updates this screen
+    // If you have a backend endpoint to update status, call it here too.
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-blue-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      </div>
+    )
+  }
+
+  if (error || !restaurant) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-blue-50">
+        <p className="text-gray-600">{error || "Không tìm thấy nhà hàng"}</p>
+>>>>>>> origin/nam-branch
       </div>
     )
   }
@@ -84,6 +202,10 @@ export default function RestaurantDashboard() {
               </div>
             </div>
           </Card>
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/nam-branch
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-blue-100 rounded-lg">
@@ -95,6 +217,10 @@ export default function RestaurantDashboard() {
               </div>
             </div>
           </Card>
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/nam-branch
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-green-100 rounded-lg">
@@ -117,14 +243,27 @@ export default function RestaurantDashboard() {
 
           <TabsContent value="orders" className="mt-6">
             <div className="space-y-4">
+<<<<<<< HEAD
               {allOrders.length === 0 ? (
+=======
+              {orders.length === 0 ? (
+>>>>>>> origin/nam-branch
                 <Card className="p-8 text-center">
                   <p className="text-gray-500">Chưa có đơn hàng nào</p>
                 </Card>
               ) : (
+<<<<<<< HEAD
                 allOrders
                   .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map((order) => <OrderCard key={order.id} order={order} onUpdateStatus={updateOrderStatus} />)
+=======
+                orders
+                  .slice()
+                  .sort((a, b) => new Date(b.createdAt as any).getTime() - new Date(a.createdAt as any).getTime())
+                  .map((order) => (
+                    <OrderCard key={order.id} order={order} onUpdateStatus={handleUpdateStatus} />
+                  ))
+>>>>>>> origin/nam-branch
               )}
             </div>
           </TabsContent>
@@ -136,6 +275,10 @@ export default function RestaurantDashboard() {
                 Thêm món mới
               </Button>
             </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/nam-branch
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {menuItems.map((item) => (
                 <MenuItemCard key={item.id} item={item} onEdit={() => router.push(`/restaurant/menu/${item.id}`)} />
@@ -173,6 +316,7 @@ function OrderCard({
     cancelled: null,
   }
 
+<<<<<<< HEAD
   const handleUpdateStatus = () => {
     const next = nextStatus[order.status]
     if (next) {
@@ -182,6 +326,30 @@ function OrderCard({
 
   const handleCancel = () => {
     onUpdateStatus(order.id, "cancelled")
+=======
+  // Unified handler for both Cancel and Next Status
+  const handleStatusChange = async (newStatus: Order["status"]) => {
+    if (!newStatus) return
+
+    try {
+      // 1. Call the backend API
+      const updatedOrder = await updateOrderStatusApi(order.id, newStatus)
+
+      // 2. Notify the parent to update local state
+      // (We use updatedOrder.status or newStatus)
+      onUpdateStatus(updatedOrder.id, updatedOrder.status)
+      
+    } catch (e: any) {
+      alert(e?.message ?? "Cập nhật trạng thái thất bại")
+    }
+  }
+
+  // Dedicated cancel handler
+  const handleCancel = () => {
+    if (confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) {
+      handleStatusChange("cancelled")
+    }
+>>>>>>> origin/nam-branch
   }
 
   return (
@@ -191,6 +359,10 @@ function OrderCard({
           <p className="font-semibold">Đơn hàng #{order.id}</p>
           <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
         </div>
+<<<<<<< HEAD
+=======
+        {/* Make sure statusColors and statusLabels are imported or defined */}
+>>>>>>> origin/nam-branch
         <Badge className={statusColors[order.status]}>{statusLabels[order.status]}</Badge>
       </div>
 
@@ -199,9 +371,15 @@ function OrderCard({
         {order.items.map((item, index) => (
           <div key={index} className="flex justify-between text-sm">
             <span className="text-gray-600">
+<<<<<<< HEAD
               {item.quantity}x {item.menuItem.name}
             </span>
             <span>{formatPrice(item.menuItem.price * item.quantity)}</span>
+=======
+              {item.quantity}x {item.menuItemName}
+            </span>
+            <span>{formatPrice(item.price * item.quantity)}</span>
+>>>>>>> origin/nam-branch
           </div>
         ))}
       </div>
@@ -230,14 +408,29 @@ function OrderCard({
             <Button
               variant="outline"
               size="sm"
+<<<<<<< HEAD
               onClick={handleCancel}
+=======
+              onClick={handleCancel} // ✅ Now defined
+>>>>>>> origin/nam-branch
               className="text-red-600 hover:text-red-700 bg-transparent"
             >
               Hủy
             </Button>
           )}
+<<<<<<< HEAD
           {nextStatus[order.status] && (
             <Button size="sm" onClick={handleUpdateStatus} className="bg-blue-500 hover:bg-blue-600">
+=======
+          
+          {nextStatus[order.status] && (
+            <Button 
+              size="sm" 
+              // ✅ Correctly passing the specific next status string
+              onClick={() => handleStatusChange(nextStatus[order.status]!)} 
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+>>>>>>> origin/nam-branch
               {nextStatusLabel[order.status]}
             </Button>
           )}
@@ -247,6 +440,54 @@ function OrderCard({
   )
 }
 
+<<<<<<< HEAD
+=======
+export async function updateOrderStatusApi(
+  orderId: string,
+  status: Order["status"]
+): Promise<Order> {
+  const authHeader = useStore.getState().authHeader
+  if (!authHeader) throw new Error("Missing Basic Auth. Please login again.")
+
+  const res = await fetch(`/api/orders/${orderId}/status`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: authHeader,
+    },
+    body: JSON.stringify({ status }),
+  })
+
+  if (!res.ok) {
+    const msg = await res.text().catch(() => "")
+    throw new Error(msg || `Failed: ${res.status}`)
+  }
+
+  // backend returns OrderResponse, but we map it into your Order shape
+  const data = await res.json()
+
+  const mapped: Order = {
+    id: String(data.id),
+    restaurantId: String(data.restaurantId),
+    customerId: String(data.customerId),
+    total: Number(data.total),
+    status: data.status,
+    deliveryAddress: data.deliveryAddress,
+    customerPhone: data.customerPhone,
+    createdAt: new Date(data.createdAt), // LocalDateTime string -> Date
+    note: data.note ?? undefined,
+    items: Array.isArray(data.items)
+      ? data.items.map((it: any) => ({
+          menuItemName: String(it.menuItemName),
+          quantity: Number(it.quantity),
+        }))
+      : [],
+  }
+
+  return mapped
+}
+
+>>>>>>> origin/nam-branch
 function MenuItemCard({ item, onEdit }: { item: MenuItem; onEdit: () => void }) {
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow">

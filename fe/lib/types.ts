@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 export type UserRole = "customer" | "restaurant" | "delivery" | "admin"
+=======
+export type UserRole = "customer" | "restaurant" | "delivery"
+>>>>>>> origin/nam-branch
 
 export interface User {
   id: string
@@ -70,6 +74,27 @@ export interface Order {
   customerId: string
   restaurantId: string
   items: {
+<<<<<<< HEAD
+=======
+    menuItemName: String
+    quantity: number
+    price: number
+  }[]
+  total: number
+  status: "pending" | "confirmed" | "preparing" | "delivering" | "completed" | "cancelled"
+  deliveryAddress: string
+  customerPhone: string
+  createdAt: Date
+  note?: string
+  deliveryAssignmentId?: string
+}
+
+export interface MockOrder {
+  id: string
+  customerId: string
+  restaurantId: string
+  items: {
+>>>>>>> origin/nam-branch
     menuItem: MenuItem
     quantity: number
   }[]
@@ -82,6 +107,10 @@ export interface Order {
   deliveryAssignmentId?: string
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/nam-branch
 export interface Review {
   id: string
   orderId: string
