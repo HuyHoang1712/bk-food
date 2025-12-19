@@ -11,18 +11,25 @@ export default function HomePage() {
   const { currentUser, setCurrentUser } = useStore()
 
   useEffect(() => {
-    if (currentUser) {
-      if (currentUser.role === "customer") {
-        router.push("/customer")
-      } else if (currentUser.role === "delivery"){
-        router.push("/delivery")
-      }else  {
-        router.push("/restaurant")
-      }
-    }
-  }, [currentUser, router])
+  if (!currentUser) return  // ✅ chưa đăng nhập thì ở lại trang Home
 
-  const handleLogin = (role: "customer" | "restaurant" | "delivery") => {
+  switch (currentUser.role) {
+    case "customer":
+      router.replace("/customer")
+      break
+    case "delivery":
+      router.replace("/delivery")
+      break
+    case "admin":
+      router.replace("/admin")
+      break
+    case "restaurant":
+      router.replace("/restaurant")
+      break
+  }
+}, [currentUser, router])
+
+  const handleLogin = (role: "customer" | "restaurant" | "delivery" | "admin") => {
     const user = mockUsers.find((u) => u.role === role)
     if (user) {
       setCurrentUser(user)
@@ -56,12 +63,19 @@ export default function HomePage() {
             Nhà hàng
           </Button>
 
-           <Button
+          <Button
             onClick={() => handleLogin("delivery")}
             variant="secondary"
             className="w-full h-14 text-lg border-blue-500 bg-slate-500 hover:bg-slate-600"
           >
             Đơn vị vận chuyển
+          </Button>
+          <Button
+            onClick={() => handleLogin("admin")}
+            variant="outline"
+            className="w-full h-14 text-lg border-amber-500 text-amber-600 hover:bg-amber-50"
+          >
+            Quản trị viên
           </Button>
         </div>
 
