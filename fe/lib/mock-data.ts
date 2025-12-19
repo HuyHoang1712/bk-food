@@ -162,6 +162,13 @@ export const mockUsers: User[] = [
     phone: "0843301338",
     vehicleType: "Xe máy Honda Vision",
   },
+  {
+    id: "u4",
+    name: "Trần Quản Trị",
+    email: "admin@bkfood.vn",
+    role: "admin",
+    phone: "0987654321",
+  },
 ]
 
 export const mockOrders: Order[] = [
