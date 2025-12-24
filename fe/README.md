@@ -31,3 +31,57 @@
 2. Chạy môi trường phát triển: `npm run dev` và truy cập localhost
 .
 
+## Thiết lập môi trường & API (Supabase hoặc MySQL)
+
+### Biến môi trường cho Next.js
+Tạo file `.env.local` trong thư mục `fe/` và thêm các biến sau tuỳ theo cách bạn xác thực:
+
+- **Dùng Supabase (mặc định của màn hình đăng nhập):**
+  - `NEXT_PUBLIC_SUPABASE_URL` = URL dự án Supabase.
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY` = anon key của dự án Supabase.
+- **Dùng Spring Boot + MySQL (không qua Supabase):**
+  - `NEXT_PUBLIC_API_BASE_URL` = base URL backend (ví dụ: `http://localhost:8080`). Front-end sẽ gọi các API bảo vệ đến đây.
+
+### Biến môi trường cho Spring Boot (MySQL)
+Thêm vào `application.properties` hoặc `.env` của backend:
+
+```
+SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/bk_food?useSSL=false&serverTimezone=UTC
+SPRING_DATASOURCE_USERNAME=bk_food_user
+SPRING_DATASOURCE_PASSWORD=your_strong_password
+SPRING_JPA_HIBERNATE_DDL_AUTO=update
+SPRING_JPA_SHOW_SQL=true
+```
+
+Bạn có thể tạo database và user nhanh bằng MySQL CLI:
+
+```
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS bk_food CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" \
+  -e "CREATE USER IF NOT EXISTS 'bk_food_user'@'%' IDENTIFIED BY 'your_strong_password';" \
+  -e "GRANT ALL PRIVILEGES ON bk_food.* TO 'bk_food_user'@'%'; FLUSH PRIVILEGES;"
+```
+
+Nếu tự triển khai Google OAuth tại backend, khai báo thêm (ví dụ):
+
+```
+SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-ID=... 
+SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-SECRET=...
+SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT-URI={baseUrl}/api/auth/google/callback
+```
+
+### Gợi ý luồng API khi dùng MySQL
+1. **Đăng nhập email/password**: Front-end gửi `POST ${NEXT_PUBLIC_API_BASE_URL}/api/auth/login` với body `{ "email": "...", "password": "..." }`; backend trả JWT/Session và cookie (HttpOnly) để dùng cho các API tiếp theo.
+2. **Đăng nhập Google**: Front-end mở `${NEXT_PUBLIC_API_BASE_URL}/api/auth/oauth2/authorize/google?redirect_uri=<URL_FRONT>`; backend xử lý Google OAuth2, tạo user (provider=google) và redirect về `redirect_uri?token=<JWT>`.
+3. **Hoặc gửi Google ID token**: nếu front-end lấy được `idToken` từ Google Identity, gọi `POST /api/auth/google` với `{ "idToken": "..." }`.
+4. **Gọi API bảo vệ**: thêm header `Authorization: Bearer <jwt>`; ví dụ lấy hồ sơ user `GET ${NEXT_PUBLIC_API_BASE_URL}/api/users/me`.
+5. **Đồng bộ UI đăng nhập**: nếu không dùng Supabase, màn hình login đã tự động chuyển sang gọi API Spring Boot khi `NEXT_PUBLIC_API_BASE_URL` có giá trị.
+
+### Chạy backend Spring Boot
+
+```
+cd backend
+mvn spring-boot:run
+```
+
+Đảm bảo đã cấu hình biến môi trường ở trên và đã tạo database MySQL trước khi chạy.
+
